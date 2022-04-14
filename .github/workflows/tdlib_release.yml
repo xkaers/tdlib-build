@@ -1,0 +1,152 @@
+name: TDLib Release
+on:
+  workflow_dispatch:
+    inputs:
+      commit:
+        description: 'Commit, branch or tag to checkout'
+        required: false
+        default: ''
+
+jobs:
+  windows:
+    runs-on: windows-latest
+    strategy:
+      matrix:
+        platform:
+          - arch: x64
+            target: x64
+          - arch: x86
+            target: Win32
+
+    steps:
+      - if: ${{ github.event.inputs.commit == 'master' || github.event.inputs.commit == '' }}
+        run: |
+          echo "release_name=tdlib-last-windows-${{ matrix.platform.arch }}" >> $env:GITHUB_ENV
+          echo "release_version=last" >> $env:GITHUB_ENV
+      - if: ${{ github.event.inputs.commit != 'master' && github.event.inputs.commit != '' }}
+        run: |
+          echo "release_name=tdlib-${{ github.event.inputs.commit }}-windows-${{ matrix.platform.arch }}" >> $env:GITHUB_ENV
+          echo "release_version=${{ github.event.inputs.commit }}" >> $env:GITHUB_ENV
+      - name: Install packages
+        run: |
+          vcpkg install gperf:${{ matrix.platform.arch }}-windows openssl:${{ matrix.platform.arch }}-windows zlib:${{ matrix.platform.arch }}-windows
+      - name: Clone TDLib
+        uses: actions/checkout@v3
+        with: 
+          repository: tdlib/td
+          ref: ${{ github.event.inputs.commit }}
+      - name: Build For Windows Java
+        shell: pwsh
+        run: |
+          mkdir build
+          cd build
+          cmake -A ${{ matrix.platform.target }} -DCMAKE_INSTALL_PREFIX:PATH=../example/java/td -DTD_ENABLE_JNI=ON -DCMAKE_TOOLCHAIN_FILE:FILEPATH=C:/vcpkg/scripts/buildsystems/vcpkg.cmake ..
+          cmake --build . --target install --config Release
+          cd ..
+          cd example/java
+          mkdir build
+          cd build
+          cmake -A ${{ matrix.platform.target }} -DCMAKE_INSTALL_PREFIX:PATH=../../../tdlib -DCMAKE_TOOLCHAIN_FILE:FILEPATH=C:/vcpkg/scripts/buildsystems/vcpkg.cmake -DTd_DIR:PATH=$(Resolve-Path ../td/lib/cmake/Td) ..
+          cmake --build . --target install --config Release
+          cd ../../..
+          Compress-Archive $(Resolve-Path tdlib/*) ${{ env.release_name }}-for-java.zip
+      - name: Build For Windows CSharp (through C++/CLI)
+        shell: pwsh
+        run: |
+          Remove-Item build -Force -Recurse -ErrorAction SilentlyContinue
+          Remove-Item tdlib -Force -Recurse -ErrorAction SilentlyContinue
+          mkdir build
+          cd build
+          cmake -A ${{ matrix.platform.target }} -DCMAKE_INSTALL_PREFIX:PATH=../tdlib -DTD_ENABLE_DOTNET=ON -DCMAKE_TOOLCHAIN_FILE:FILEPATH=C:/vcpkg/scripts/buildsystems/vcpkg.cmake ..
+          cmake --build . --target install --config Release
+          copy Release\tg_cli.exe ..\tdlib\bin
+          cd ..
+          git checkout td/telegram/Client.h td/telegram/Log.h td/tl/TlObject.h
+          Compress-Archive $(Resolve-Path tdlib/*) ${{ env.release_name }}-for-csharp.zip
+      - name: Build For Windows Except CSharp And Java (through JSON interface)
+        shell: pwsh
+        run: |
+          Remove-Item build -Force -Recurse -ErrorAction SilentlyContinue
+          Remove-Item tdlib -Force -Recurse -ErrorAction SilentlyContinue
+          mkdir build
+          cd build
+          cmake -A ${{ matrix.platform.target }} -DCMAKE_INSTALL_PREFIX:PATH=../tdlib -DCMAKE_TOOLCHAIN_FILE:FILEPATH=C:/vcpkg/scripts/buildsystems/vcpkg.cmake ..
+          cmake --build . --target install --config Release
+          copy Release\tg_cli.exe ..\tdlib\bin
+          cd ..
+          Compress-Archive $(Resolve-Path tdlib/*) ${{ env.release_name }}-for-through-json-interface.zip
+      - name: Upload artifact to release
+        uses: svenstaro/upload-release-action@v2
+        with:
+          repo_token: ${{ secrets.GITHUB_TOKEN }}
+          tag: tdlib-${{ env.release_version }}
+          file: ${{ env.release_name }}*.zip
+          overwrite: true
+          file_glob: true
+  
+  linux:
+    runs-on: ubuntu-latest
+    steps:
+      - if: ${{ github.event.inputs.commit == 'master' || github.event.inputs.commit == '' }}
+        run: |
+          echo "release_name=tdlib-last-linux" >> $GITHUB_ENV
+          echo "release_version=last" >> $GITHUB_ENV
+      - if: ${{ github.event.inputs.commit != 'master' && github.event.inputs.commit != '' }}
+        run: |
+          echo "release_name=tdlib-${{ github.event.inputs.commit }}-linux" >> $GITHUB_ENV
+          echo "release_version=${{ github.event.inputs.commit }}" >> $GITHUB_ENV
+      - name: Install packages
+        run: |
+          sudo apt-get update
+          sudo apt-get upgrade
+          sudo apt-get install make git zlib1g-dev libssl-dev gperf php-cli cmake clang-10 libc++-dev libc++abi-dev
+      - uses: actions/checkout@v3
+      - uses: actions/setup-java@v3
+        with:
+          distribution: 'temurin'
+          java-version: '8'
+      - name: Clone TDLib
+        uses: actions/checkout@v3
+        with: 
+          repository: tdlib/td
+          ref: ${{ github.event.inputs.commit }}
+      - name: Build For Linux Java
+        env:
+          CXXFLAGS: "-stdlib=libc++"
+          CC: /usr/bin/clang-10
+          CXX: /usr/bin/clang++-10
+        run: |
+          mkdir build
+          cd build
+          cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX:PATH=../example/java/td -DTD_ENABLE_JNI=ON ..
+          cmake --build . --target install
+          cd ..
+          cd example/java
+          mkdir build
+          cd build
+          cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX:PATH=../../../tdlib -DTd_DIR:PATH=$(readlink -e ../td/lib/cmake/Td) ..
+          cmake --build . --target install
+          cd ../../..
+          tar -czvf ${{ env.release_name }}-for-java.tar.gz tdlib/*
+      - name: Build For Linux Except Java (through JSON interface)
+        env:
+          CXXFLAGS: "-stdlib=libc++"
+          CC: /usr/bin/clang-10
+          CXX: /usr/bin/clang++-10
+        run: |
+          rm -rf build
+          rm -rf tdlib
+          mkdir build
+          cd build
+          cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX:PATH=../tdlib ..
+          cmake --build . --target install
+          cd ..
+          tar -czvf ${{ env.release_name }}-for-through-json-interface.tar.gz tdlib/*
+      - name: Upload artifact to release
+        uses: svenstaro/upload-release-action@v2
+        with:
+          repo_token: ${{ secrets.GITHUB_TOKEN }}
+          tag: tdlib-${{ env.release_version }}
+          file: ${{ env.release_name }}*.tar.gz
+          overwrite: true
+          file_glob: true
