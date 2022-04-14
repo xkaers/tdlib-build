@@ -9,13 +9,13 @@ release中只提供Windows和linux系统下的TDLib库, 其中
 2. 带有csharp的是提供给使用C++/CLI调用TDLib库(windows下开发,不含uwp)的开发者使用的
 3. 带有through-json-interface的是提供给使用json接口调用TDLib库的开发者使用的
 
-只有Java和C#是需要下载上面符合**`1,2`**说明的库, 其他语言根据系统直接下载带有through-json-interface的库即可.  .net core开发者请使用带有through-json-interface的库
+只有Java和C#是需要下载上面符合`1,2`说明的库, 其他语言根据系统直接下载带有through-json-interface的库即可.  .net core开发者请使用带有through-json-interface的库
 
 
 
 ### 常见问题
 
-Ubuntu下运行示例程序如果报`java.lang.UnsatisfiedLinkError: /home/**/tdlib/bin/libtdjni.so: libc++.so.1: cannot open shared object file: No such file or directory` 请先安装libc++-dev
+Ubuntu下运行tdlib java示例程序如果报`java.lang.UnsatisfiedLinkError: /home/**/tdlib/bin/libtdjni.so: libc++.so.1: cannot open shared object file: No such file or directory` 请先安装libc++-dev
 
 `sudo apt-get install libc++-dev`
 
