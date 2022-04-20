@@ -48,7 +48,9 @@ jobs:
           cd build
           cmake -A ${{ matrix.platform.target }} -DCMAKE_INSTALL_PREFIX:PATH=../../../tdlib -DCMAKE_TOOLCHAIN_FILE:FILEPATH=C:/vcpkg/scripts/buildsystems/vcpkg.cmake -DTd_DIR:PATH=$(Resolve-Path ../td/lib/cmake/Td) ..
           cmake --build . --target install --config Release
-          cd ../../..
+          cd ..
+          Copy-Item org/ ../../tdlib -Recurse
+          cd ../..
           Compress-Archive $(Resolve-Path tdlib/*) ${{ env.release_name }}-for-java.zip
       - name: Build For Windows CSharp (through C++/CLI)
         shell: pwsh
@@ -126,7 +128,9 @@ jobs:
           cd build
           cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX:PATH=../../../tdlib -DTd_DIR:PATH=$(readlink -e ../td/lib/cmake/Td) ..
           cmake --build . --target install
-          cd ../../..
+          cd ..
+          cp -r org/ ../../tdlib
+          cd ../..
           tar -czvf ${{ env.release_name }}-for-java.tar.gz tdlib/*
       - name: Build For Linux Except Java (through JSON interface)
         env:
