@@ -21,6 +21,16 @@ Ubuntu下运行tdlib java示例程序如果报`java.lang.UnsatisfiedLinkError: /
 
 
 
+出现如下错误请检查你使用的TdApi.java是不是和下载的release中org目录下的TdApi.java一致. 请在更新依赖库时尽量使用release包中的TdApi.java
+
+```java
+java.lang.UnsatisfiedLinkError: org.drinkless.tdlib.Client.nativeClientExecute(Lorg/drinkless/tdlib/TdApi$Function;)Lorg/drinkless/tdlib/TdApi$Object;
+   at org.drinkless.tdlib.Client.nativeClientExecute(Native Method)
+   at org.drinkless.tdlib.Client.execute(Client.java:84)
+```
+
+
+
 ### 参考资料
 
 https://github.com/tdlib/td
