@@ -32,7 +32,7 @@ jobs:
           echo "release_name=tdlib-${{ github.event.inputs.commit }}-${{ matrix.distro }}-${{ matrix.arch }}" >> $GITHUB_ENV
           echo "release_version=${{ github.event.inputs.commit }}" >> $GITHUB_ENV
       - uses: actions/checkout@v3
-      - uses: uraimo/run-on-arch-action@v2
+      - uses: uraimo/run-on-arch-action@v2.2.0
         with:
           arch: ${{ matrix.arch }}
           distro: ${{ matrix.distro }}
@@ -65,7 +65,7 @@ jobs:
 
           run: |
             cd /root
-                        
+
             if [ $arch = "armv7" ]; then
               export JAVA_HOME=/usr/lib/jvm/java-8-openjdk-armhf
               wget -P /usr/lib/jvm/java-8-openjdk-armhf/include https://raw.githubusercontent.com/xkaers/tdlib-build/main/jawt.h
