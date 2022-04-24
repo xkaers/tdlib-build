@@ -57,6 +57,9 @@ jobs:
 
           run: |
             cd /root
+            ls -l
+            exprot JAVA_HOME=/usr/lib/jvm/java-8-openjdk-arm64
+            java -version
             git clone https://github.com/tdlib/td.git
             cd td
             rm -rf build
