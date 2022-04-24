@@ -44,6 +44,7 @@ jobs:
             --volume "${PWD}/tdlib:/root/tdlib"
           # Pass some environment variables to the container
           env: | # YAML, but pipe character is necessary
+            arch: ${{ matrix.arch }}
             release_name: ${{ env.release_name }}
             release_version: ${{ env.release_version }}
           install: |
@@ -64,8 +65,22 @@ jobs:
 
           run: |
             cd /root
-            wget -P /usr/lib/jvm/java-8-openjdk-arm64/include https://raw.githubusercontent.com/xkaers/tdlib-build/main/jawt.h
-            export JAVA_HOME=/usr/lib/jvm/java-8-openjdk-arm64
+
+            if [ $arch = "armv7" ]; then
+              export JAVA_HOME=/usr/lib/jvm/java-8-openjdk-armhf
+              wget -P /usr/lib/jvm/java-8-openjdk-armhf/include https://raw.githubusercontent.com/xkaers/tdlib-build/main/jawt.h
+            else if [ $arch = "aarch64" ]; then
+              export JAVA_HOME=/usr/lib/jvm/java-8-openjdk-arm64
+              wget -P /usr/lib/jvm/java-8-openjdk-arm64/include https://raw.githubusercontent.com/xkaers/tdlib-build/main/jawt.h
+            else if [ $arch = "s390x" ]; then
+              export JAVA_HOME=/usr/lib/jvm/java-8-openjdk-s390x
+              wget -P /usr/lib/jvm/java-8-openjdk-s390x/include https://raw.githubusercontent.com/xkaers/tdlib-build/main/jawt.h
+            else if [ $arch = "ppc64le" ]; then
+              export JAVA_HOME=/usr/lib/jvm/java-8-openjdk-ppc64el
+              wget -P /usr/lib/jvm/java-8-openjdk-ppc64el/include https://raw.githubusercontent.com/xkaers/tdlib-build/main/jawt.h
+            else
+              echo "do nothing........"
+            fi
             
             if [ $release_version = "last" ]; then
               git clone https://github.com/tdlib/td.git
