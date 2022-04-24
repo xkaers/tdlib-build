@@ -43,23 +43,22 @@ jobs:
             case "${{ matrix.distro }}" in
               ubuntu*|jessie|stretch|buster|bullseye)
                 apt-get update -q -y
-                apt-get install -q -y make git zlib1g-dev libssl-dev gperf php-cli cmake openjdk-8-jdk-headless clang-10 libc++-dev libc++abi-dev
+                apt-get install -q -y make git zlib1g-dev libssl-dev gperf php-cli cmake openjdk-8-jdk-headless clang-10 libc++-dev libc++abi-dev wget
                 ;;
               fedora*)
                 dnf -y update
-                dnf -y install make git zlib1g-dev libssl-dev gperf php-cli cmake openjdk-8-jdk-headless clang-10 libc++-dev libc++abi-dev
+                dnf -y install make git zlib1g-dev libssl-dev gperf php-cli cmake openjdk-8-jdk-headless clang-10 libc++-dev libc++abi-dev wget
                 ;;
               alpine*)
                 apk update
-                apk add make git zlib1g-dev libssl-dev gperf php-cli cmake openjdk-8-jdk-headless clang-10 libc++-dev libc++abi-dev
+                apk add make git zlib1g-dev libssl-dev gperf php-cli cmake openjdk-8-jdk-headless clang-10 libc++-dev libc++abi-dev wget
                 ;;
             esac
 
           run: |
             cd /root
+            wget -P /usr/lib/jvm/java-8-openjdk-arm64/include https://raw.githubusercontent.com/xkaers/tdlib-build/main/jawt.h
             export JAVA_HOME=/usr/lib/jvm/java-8-openjdk-arm64
-            echo "find awt"
-            find / -name *awt*
             git clone https://github.com/tdlib/td.git
             cd td
             rm -rf build
