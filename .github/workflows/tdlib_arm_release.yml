@@ -31,11 +31,11 @@ jobs:
           arch: ${{ matrix.arch }}
           distro: ${{ matrix.distro }}
           # Create an artifacts directory
-          # setup: |
-          #  mkdir -p "${PWD}/td"
+          setup: |
+            mkdir -p "${PWD}/tdlib"
           # Mount the artifacts directory as /artifacts in the container
           dockerRunArgs: |
-            --volume "${PWD}:/root/td"
+            --volume "${PWD}/tdlib:/root/tdlib"
           # Pass some environment variables to the container
           env: | # YAML, but pipe character is necessary
             artifact_name: ${{ env.release_name }}
@@ -75,12 +75,14 @@ jobs:
             cp -r org/ ../../tdlib
             cd ../..
             tar -czvf ${artifact_name}-for-java.tar.gz tdlib/*
+            cp ${artifact_name}-for-java.tar.gz ../tdlib
+
 
       - name: Upload artifact to release
         uses: svenstaro/upload-release-action@v2
         with:
           repo_token: ${{ secrets.GITHUB_TOKEN }}
           tag: tdlib-${{ env.release_version }}
-          file: ${{ env.release_name }}*.tar.gz
+          file: ./tdlib/${{ env.release_name }}*.tar.gz
           overwrite: true
           file_glob: true
