@@ -14,16 +14,24 @@ jobs:
     strategy:
       matrix:
         include:
+          - arch: armv6
+            distro: ubuntu18.04
+          - arch: armv7
+            distro: ubuntu18.04
           - arch: aarch64
-            distro: ubuntu20.04
+            distro: ubuntu18.04
+          - arch: s390x
+            distro: ubuntu18.04
+          - arch: ppc64le
+            distro: ubuntu18.04
     steps:
       - if: ${{ github.event.inputs.commit == 'master' || github.event.inputs.commit == '' }}
         run: |
-          echo "release_name=tdlib-last-${{ matrix.distro }}_${{ matrix.arch }}" >> $GITHUB_ENV
+          echo "release_name=tdlib-last-${{ matrix.distro }}-${{ matrix.arch }}" >> $GITHUB_ENV
           echo "release_version=last" >> $GITHUB_ENV
       - if: ${{ github.event.inputs.commit != 'master' && github.event.inputs.commit != '' }}
         run: |
-          echo "release_name=tdlib-${{ github.event.inputs.commit }}-${{ matrix.distro }}_${{ matrix.arch }}" >> $GITHUB_ENV
+          echo "release_name=tdlib-${{ github.event.inputs.commit }}-${{ matrix.distro }}-${{ matrix.arch }}" >> $GITHUB_ENV
           echo "release_version=${{ github.event.inputs.commit }}" >> $GITHUB_ENV
       - uses: actions/checkout@v3
       - uses: uraimo/run-on-arch-action@v2
@@ -38,7 +46,8 @@ jobs:
             --volume "${PWD}/tdlib:/root/tdlib"
           # Pass some environment variables to the container
           env: | # YAML, but pipe character is necessary
-            artifact_name: ${{ env.release_name }}
+            release_name: ${{ env.release_name }}
+            release_version: ${{ env.release_version }}
           install: |
             case "${{ matrix.distro }}" in
               ubuntu*|jessie|stretch|buster|bullseye)
@@ -59,7 +68,13 @@ jobs:
             cd /root
             wget -P /usr/lib/jvm/java-8-openjdk-arm64/include https://raw.githubusercontent.com/xkaers/tdlib-build/main/jawt.h
             export JAVA_HOME=/usr/lib/jvm/java-8-openjdk-arm64
-            git clone https://github.com/tdlib/td.git
+            
+            if [ "$release_version" = "last" ]; then
+              git clone https://github.com/tdlib/td.git
+            else
+              git clone -b $release_version https://github.com/tdlib/td.git
+            fi
+            
             cd td
             rm -rf build
             mkdir build
@@ -76,9 +91,8 @@ jobs:
             cd ..
             cp -r org/ ../../tdlib
             cd ../..
-            tar -czvf ${artifact_name}-for-java.tar.gz tdlib/*
-            cp ${artifact_name}-for-java.tar.gz ../tdlib
-
+            tar -czvf ${release_name}-for-java.tar.gz tdlib/*
+            cp ${release_name}-for-java.tar.gz ../tdlib
 
       - name: Upload artifact to release
         uses: svenstaro/upload-release-action@v2
