@@ -14,14 +14,14 @@ jobs:
     strategy:
       matrix:
         include:
-          # - arch: armv7
-          #   distro: ubuntu18.04
+          - arch: armv7
+            distro: ubuntu18.04
           - arch: aarch64
             distro: ubuntu18.04
-          # - arch: s390x
-          #   distro: ubuntu18.04
-          # - arch: ppc64le
-          #   distro: ubuntu18.04
+          - arch: s390x
+            distro: ubuntu18.04
+          - arch: ppc64le
+            distro: ubuntu18.04
     steps:
       - if: ${{ github.event.inputs.commit == 'master' || github.event.inputs.commit == '' }}
         run: |
@@ -36,7 +36,6 @@ jobs:
         with:
           arch: ${{ matrix.arch }}
           distro: ${{ matrix.distro }}
-          # Create an artifacts directory
           setup: |
             mkdir -p -v "${PWD}/tdlib"
             cat  /home/runner/work/_actions/uraimo/run-on-arch-action/v2.2.0/src/run-on-arch-commands.sh
@@ -67,16 +66,18 @@ jobs:
           run: |
             cd /root
 
+            export JAVA_TOOL_OPTIONS=-Dfile.encoding=UTF8
+
             if [ $arch = "armv7" ]; then
               export JAVA_HOME=/usr/lib/jvm/java-8-openjdk-armhf
               wget -P /usr/lib/jvm/java-8-openjdk-armhf/include https://raw.githubusercontent.com/xkaers/tdlib-build/main/jawt.h
-            else if [ $arch = "aarch64" ]; then
+            elif [ $arch = "aarch64" ]; then
               export JAVA_HOME=/usr/lib/jvm/java-8-openjdk-arm64
               wget -P /usr/lib/jvm/java-8-openjdk-arm64/include https://raw.githubusercontent.com/xkaers/tdlib-build/main/jawt.h
-            else if [ $arch = "s390x" ]; then
+            elif [ $arch = "s390x" ]; then
               export JAVA_HOME=/usr/lib/jvm/java-8-openjdk-s390x
               wget -P /usr/lib/jvm/java-8-openjdk-s390x/include https://raw.githubusercontent.com/xkaers/tdlib-build/main/jawt.h
-            else if [ $arch = "ppc64le" ]; then
+            elif [ $arch = "ppc64le" ]; then
               export JAVA_HOME=/usr/lib/jvm/java-8-openjdk-ppc64el
               wget -P /usr/lib/jvm/java-8-openjdk-ppc64el/include https://raw.githubusercontent.com/xkaers/tdlib-build/main/jawt.h
             else
