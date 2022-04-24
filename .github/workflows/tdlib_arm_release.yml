@@ -59,26 +59,11 @@ jobs:
             cd /root
             export JAVA_HOME=/usr/lib/jvm/java-8-openjdk-arm64
             find . -name *awt*
-            git clone https://github.com/tdlib/td.git
-            cd td
-            rm -rf build
-            mkdir build
-            cd build
-            CXXFLAGS="-stdlib=libc++" CC=/usr/bin/clang-10 CXX=/usr/bin/clang++-10 cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX:PATH=../example/java/td -DTD_ENABLE_JNI=ON ..
-            cmake --build . --target install -j $(nproc)
-            cd ..
-            cd example/java
-            rm -rf build
-            mkdir build
-            cd build
-            CXXFLAGS="-stdlib=libc++" CC=/usr/bin/clang-10 CXX=/usr/bin/clang++-10 cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX:PATH=../../../tdlib -DTd_DIR:PATH=$(readlink -e ../td/lib/cmake/Td) ..
-            cmake --build . --target install -j $(nproc)
-            cd ..
-            cp -r org/ ../../tdlib
-            cd ../..
-            tar -czvf ${artifact_name}-for-java.tar.gz tdlib/*
-            cp ${artifact_name}-for-java.tar.gz ../tdlib
 
+
+      - uses: actions/checkout@v3
+      - name: Setup tmate session
+        uses: mxschmitt/action-tmate@v3
 
       - name: Upload artifact to release
         uses: svenstaro/upload-release-action@v2
