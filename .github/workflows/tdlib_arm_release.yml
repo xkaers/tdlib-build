@@ -67,10 +67,10 @@ jobs:
             wget -P /usr/lib/jvm/java-8-openjdk-arm64/include https://raw.githubusercontent.com/xkaers/tdlib-build/main/jawt.h
             export JAVA_HOME=/usr/lib/jvm/java-8-openjdk-arm64
             
-            if [ "$release_version" = "last" ]; then
+            if [ $release_version = "last" ]; then
               git clone https://github.com/tdlib/td.git
             else
-              git clone -b $release_version https://github.com/tdlib/td.git
+              git clone --branch $release_version https://github.com/tdlib/td.git
             fi
             
             cd td
@@ -78,14 +78,14 @@ jobs:
             mkdir build
             cd build
             CXXFLAGS="-stdlib=libc++" CC=/usr/bin/clang-6.0 CXX=/usr/bin/clang++-6.0 cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX:PATH=../example/java/td -DTD_ENABLE_JNI=ON ..
-            cmake --build . --target install -j $(nproc)
+            cmake --build . --target install
             cd ..
             cd example/java
             rm -rf build
             mkdir build
             cd build
             CXXFLAGS="-stdlib=libc++" CC=/usr/bin/clang-6.0 CXX=/usr/bin/clang++-6.0 cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX:PATH=../../../tdlib -DTd_DIR:PATH=$(readlink -e ../td/lib/cmake/Td) ..
-            cmake --build . --target install -j $(nproc)
+            cmake --build . --target install
             cd ..
             cp -r org/ ../../tdlib
             cd ../..
