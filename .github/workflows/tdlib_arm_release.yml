@@ -58,7 +58,7 @@ jobs:
           run: |
             cd /root
             export JAVA_HOME=/usr/lib/jvm/java-8-openjdk-arm64
-            java -version
+            find . -name *awt*
             git clone https://github.com/tdlib/td.git
             cd td
             rm -rf build
