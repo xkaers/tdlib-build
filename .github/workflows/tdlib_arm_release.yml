@@ -1,0 +1,86 @@
+name: TDLib ARM Release
+on:
+  workflow_dispatch:
+    inputs:
+      commit:
+        description: 'Commit, branch or tag to checkout'
+        required: false
+        default: ''
+
+jobs:
+  linux:
+    runs-on: ubuntu-latest
+    name: Build on ${{ matrix.distro }} ${{ matrix.arch }}
+    strategy:
+      matrix:
+        include:
+          - arch: aarch64
+            distro: ubuntu20.04
+    steps:
+      - if: ${{ github.event.inputs.commit == 'master' || github.event.inputs.commit == '' }}
+        run: |
+          echo "release_name=tdlib-last-${{ matrix.distro }}_${{ matrix.arch }}" >> $GITHUB_ENV
+          echo "release_version=last" >> $GITHUB_ENV
+      - if: ${{ github.event.inputs.commit != 'master' && github.event.inputs.commit != '' }}
+        run: |
+          echo "release_name=tdlib-${{ github.event.inputs.commit }}-${{ matrix.distro }}_${{ matrix.arch }}" >> $GITHUB_ENV
+          echo "release_version=${{ github.event.inputs.commit }}" >> $GITHUB_ENV
+      - uses: actions/checkout@v3
+      - uses: uraimo/run-on-arch-action@v2
+        with:
+          arch: ${{ matrix.arch }}
+          distro: ${{ matrix.distro }}
+          # Create an artifacts directory
+          # setup: |
+          #  mkdir -p "${PWD}/td"
+          # Mount the artifacts directory as /artifacts in the container
+          dockerRunArgs: |
+            --volume "${PWD}:/root/td"
+          # Pass some environment variables to the container
+          env: | # YAML, but pipe character is necessary
+            artifact_name: ${{ env.release_name }}
+          install: |
+            case "${{ matrix.distro }}" in
+              ubuntu*|jessie|stretch|buster|bullseye)
+                apt-get update -q -y
+                apt-get install -q -y make git zlib1g-dev libssl-dev gperf php-cli cmake openjdk-8-jdk-headless clang-10 libc++-dev libc++abi-dev
+                ;;
+              fedora*)
+                dnf -y update
+                dnf -y install make git zlib1g-dev libssl-dev gperf php-cli cmake openjdk-8-jdk-headless clang-10 libc++-dev libc++abi-dev
+                ;;
+              alpine*)
+                apk update
+                apk add make git zlib1g-dev libssl-dev gperf php-cli cmake openjdk-8-jdk-headless clang-10 libc++-dev libc++abi-dev
+                ;;
+            esac
+
+          run: |
+            cd /root
+            git clone https://github.com/tdlib/td.git
+            cd td
+            rm -rf build
+            mkdir build
+            cd build
+            CXXFLAGS="-stdlib=libc++" CC=/usr/bin/clang-10 CXX=/usr/bin/clang++-10 cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX:PATH=../example/java/td -DTD_ENABLE_JNI=ON ..
+            cmake --build . --target install -j $(nproc)
+            cd ..
+            cd example/java
+            rm -rf build
+            mkdir build
+            cd build
+            CXXFLAGS="-stdlib=libc++" CC=/usr/bin/clang-10 CXX=/usr/bin/clang++-10 cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX:PATH=../../../tdlib -DTd_DIR:PATH=$(readlink -e ../td/lib/cmake/Td) ..
+            cmake --build . --target install -j $(nproc)
+            cd ..
+            cp -r org/ ../../tdlib
+            cd ../..
+            tar -czvf ${artifact_name}-for-java.tar.gz tdlib/*
+
+      - name: Upload artifact to release
+        uses: svenstaro/upload-release-action@v2
+        with:
+          repo_token: ${{ secrets.GITHUB_TOKEN }}
+          tag: tdlib-${{ env.release_version }}
+          file: ${{ env.release_name }}*.tar.gz
+          overwrite: true
+          file_glob: true
