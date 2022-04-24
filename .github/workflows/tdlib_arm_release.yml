@@ -14,8 +14,6 @@ jobs:
     strategy:
       matrix:
         include:
-          - arch: armv6
-            distro: bullseye
           - arch: armv7
             distro: ubuntu18.04
           - arch: aarch64
@@ -52,15 +50,15 @@ jobs:
             case "${{ matrix.distro }}" in
               ubuntu*|jessie|stretch|buster|bullseye)
                 apt-get update -q -y
-                apt-get install -q -y make git zlib1g-dev libssl-dev gperf php-cli cmake openjdk-8-jdk-headless clang-10 libc++-dev libc++abi-dev wget
+                apt-get install -q -y make git zlib1g-dev libssl-dev gperf php-cli cmake openjdk-8-jdk-headless clang-6.0 libc++-dev libc++abi-dev wget
                 ;;
               fedora*)
                 dnf -y update
-                dnf -y install make git zlib1g-dev libssl-dev gperf php-cli cmake openjdk-8-jdk-headless clang-10 libc++-dev libc++abi-dev wget
+                dnf -y install make git zlib1g-dev libssl-dev gperf php-cli cmake openjdk-8-jdk-headless clang-6.0 libc++-dev libc++abi-dev wget
                 ;;
               alpine*)
                 apk update
-                apk add make git zlib1g-dev libssl-dev gperf php-cli cmake openjdk-8-jdk-headless clang-10 libc++-dev libc++abi-dev wget
+                apk add make git zlib1g-dev libssl-dev gperf php-cli cmake openjdk-8-jdk-headless clang-6.0 libc++-dev libc++abi-dev wget
                 ;;
             esac
 
@@ -79,14 +77,14 @@ jobs:
             rm -rf build
             mkdir build
             cd build
-            CXXFLAGS="-stdlib=libc++" CC=/usr/bin/clang-10 CXX=/usr/bin/clang++-10 cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX:PATH=../example/java/td -DTD_ENABLE_JNI=ON ..
+            CXXFLAGS="-stdlib=libc++" CC=/usr/bin/clang-6.0 CXX=/usr/bin/clang++-6.0 cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX:PATH=../example/java/td -DTD_ENABLE_JNI=ON ..
             cmake --build . --target install -j $(nproc)
             cd ..
             cd example/java
             rm -rf build
             mkdir build
             cd build
-            CXXFLAGS="-stdlib=libc++" CC=/usr/bin/clang-10 CXX=/usr/bin/clang++-10 cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX:PATH=../../../tdlib -DTd_DIR:PATH=$(readlink -e ../td/lib/cmake/Td) ..
+            CXXFLAGS="-stdlib=libc++" CC=/usr/bin/clang-6.0 CXX=/usr/bin/clang++-6.0 cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX:PATH=../../../tdlib -DTd_DIR:PATH=$(readlink -e ../td/lib/cmake/Td) ..
             cmake --build . --target install -j $(nproc)
             cd ..
             cp -r org/ ../../tdlib
