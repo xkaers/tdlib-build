@@ -39,6 +39,7 @@ jobs:
           # Create an artifacts directory
           setup: |
             mkdir -p -v "${PWD}/tdlib"
+            cat  /home/runner/work/_actions/uraimo/run-on-arch-action/v2.2.0/src/run-on-arch-commands.sh
           # Mount the artifacts directory as /artifacts in the container
           dockerRunArgs: |
             --volume "${PWD}/tdlib:/root/tdlib"
