@@ -15,7 +15,7 @@ jobs:
       matrix:
         include:
           - arch: armv6
-            distro: ubuntu18.04
+            distro: bullseye
           - arch: armv7
             distro: ubuntu18.04
           - arch: aarch64
