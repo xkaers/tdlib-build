@@ -65,8 +65,7 @@ jobs:
 
           run: |
             cd /root
-            find / -name jawt.h
-            
+                        
             if [ $arch = "armv7" ]; then
               export JAVA_HOME=/usr/lib/jvm/java-8-openjdk-armhf
               wget -P /usr/lib/jvm/java-8-openjdk-armhf/include https://raw.githubusercontent.com/xkaers/tdlib-build/main/jawt.h
