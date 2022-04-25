@@ -100,7 +100,6 @@ jobs:
         run: |
           echo "release_name=tdlib-${{ github.event.inputs.commit }}-${{ matrix.os }}-x86_64" >> $GITHUB_ENV
           echo "release_version=${{ github.event.inputs.commit }}" >> $GITHUB_ENV
-      - name: Set Clang Version ENV
       - if: ${{ matrix.os == 'ubuntu-18.04'}}
         run: |
           echo "clang_version=6.0" >> $GITHUB_ENV
