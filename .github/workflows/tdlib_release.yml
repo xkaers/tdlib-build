@@ -122,12 +122,12 @@ jobs:
           repository: tdlib/td
           ref: ${{ github.event.inputs.commit }}
       - name: Build For Linux Java
-        if: ${{ matrix.os == 'ubuntu-18.04'}}
+      - if: ${{ matrix.os == 'ubuntu-18.04'}}
         env:
           CXXFLAGS: "-stdlib=libc++"
           CC: /usr/bin/clang-6.0
           CXX: /usr/bin/clang++-6.0
-        if: ${{ matrix.os == 'ubuntu-20.04'}}
+      - if: ${{ matrix.os == 'ubuntu-20.04'}}
         env:
           CXXFLAGS: "-stdlib=libc++"
           CC: /usr/bin/clang-10
@@ -148,12 +148,12 @@ jobs:
           cd ../..
           tar -czvf ${{ env.release_name }}-for-java.tar.gz tdlib/*
       - name: Build For Linux Except Java (through JSON interface)
-        if: ${{ matrix.os == 'ubuntu-18.04'}}
+      - if: ${{ matrix.os == 'ubuntu-18.04'}}
         env:
           CXXFLAGS: "-stdlib=libc++"
           CC: /usr/bin/clang-6.0
           CXX: /usr/bin/clang++-6.0
-        if: ${{ matrix.os == 'ubuntu-20.04'}}
+      - if: ${{ matrix.os == 'ubuntu-20.04'}}
         env:
           CXXFLAGS: "-stdlib=libc++"
           CC: /usr/bin/clang-10
