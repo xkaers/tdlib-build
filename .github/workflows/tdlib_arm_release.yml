@@ -18,8 +18,6 @@ jobs:
             distro: ubuntu18.04
           - arch: aarch64
             distro: ubuntu18.04
-          - arch: s390x
-            distro: ubuntu20.04
           - arch: ppc64le
             distro: ubuntu18.04
     steps:
