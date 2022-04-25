@@ -21,8 +21,8 @@ jobs:
     steps:
       - if: ${{ github.event.inputs.commit == 'master' || github.event.inputs.commit == '' }}
         run: |
-          echo "release_name=tdlib-last-windows-${{ matrix.platform.arch }}" >> $env:GITHUB_ENV
-          echo "release_version=last" >> $env:GITHUB_ENV
+          echo "release_name=tdlib-latest-windows-${{ matrix.platform.arch }}" >> $env:GITHUB_ENV
+          echo "release_version=latest" >> $env:GITHUB_ENV
       - if: ${{ github.event.inputs.commit != 'master' && github.event.inputs.commit != '' }}
         run: |
           echo "release_name=tdlib-${{ github.event.inputs.commit }}-windows-${{ matrix.platform.arch }}" >> $env:GITHUB_ENV
@@ -87,20 +87,29 @@ jobs:
           file_glob: true
   
   linux:
-    runs-on: ubuntu-latest
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ubuntu-18.04, ubuntu-20.04]
     steps:
       - if: ${{ github.event.inputs.commit == 'master' || github.event.inputs.commit == '' }}
         run: |
-          echo "release_name=tdlib-last-linux" >> $GITHUB_ENV
-          echo "release_version=last" >> $GITHUB_ENV
+          echo "release_name=tdlib-latest-${{ matrix.os }}-x86_64" >> $GITHUB_ENV
+          echo "release_version=latest" >> $GITHUB_ENV
       - if: ${{ github.event.inputs.commit != 'master' && github.event.inputs.commit != '' }}
         run: |
-          echo "release_name=tdlib-${{ github.event.inputs.commit }}-linux" >> $GITHUB_ENV
+          echo "release_name=tdlib-${{ github.event.inputs.commit }}-${{ matrix.os }}-x86_64" >> $GITHUB_ENV
           echo "release_version=${{ github.event.inputs.commit }}" >> $GITHUB_ENV
-      - name: Install packages
+      - name: System Update
         run: |
           sudo apt-get update
           sudo apt-get upgrade
+      - name: Install packages
+        if: ${{ matrix.os == 'ubuntu-18.04'}}
+        run: |
+          sudo apt-get install make git zlib1g-dev libssl-dev gperf php-cli cmake clang-6.0 libc++-dev libc++abi-dev
+        if: ${{ matrix.os == 'ubuntu-20.04'}}
+        run: |
           sudo apt-get install make git zlib1g-dev libssl-dev gperf php-cli cmake clang-10 libc++-dev libc++abi-dev
       - uses: actions/checkout@v3
       - uses: actions/setup-java@v3
@@ -113,6 +122,12 @@ jobs:
           repository: tdlib/td
           ref: ${{ github.event.inputs.commit }}
       - name: Build For Linux Java
+        if: ${{ matrix.os == 'ubuntu-18.04'}}
+        env:
+          CXXFLAGS: "-stdlib=libc++"
+          CC: /usr/bin/clang-6.0
+          CXX: /usr/bin/clang++-6.0
+        if: ${{ matrix.os == 'ubuntu-20.04'}}
         env:
           CXXFLAGS: "-stdlib=libc++"
           CC: /usr/bin/clang-10
@@ -133,6 +148,12 @@ jobs:
           cd ../..
           tar -czvf ${{ env.release_name }}-for-java.tar.gz tdlib/*
       - name: Build For Linux Except Java (through JSON interface)
+        if: ${{ matrix.os == 'ubuntu-18.04'}}
+        env:
+          CXXFLAGS: "-stdlib=libc++"
+          CC: /usr/bin/clang-6.0
+          CXX: /usr/bin/clang++-6.0
+        if: ${{ matrix.os == 'ubuntu-20.04'}}
         env:
           CXXFLAGS: "-stdlib=libc++"
           CC: /usr/bin/clang-10

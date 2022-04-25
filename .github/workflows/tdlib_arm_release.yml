@@ -23,8 +23,8 @@ jobs:
     steps:
       - if: ${{ github.event.inputs.commit == 'master' || github.event.inputs.commit == '' }}
         run: |
-          echo "release_name=tdlib-last-${{ matrix.distro }}-${{ matrix.arch }}" >> $GITHUB_ENV
-          echo "release_version=last" >> $GITHUB_ENV
+          echo "release_name=tdlib-latest-${{ matrix.distro }}-${{ matrix.arch }}" >> $GITHUB_ENV
+          echo "release_version=latest" >> $GITHUB_ENV
       - if: ${{ github.event.inputs.commit != 'master' && github.event.inputs.commit != '' }}
         run: |
           echo "release_name=tdlib-${{ github.event.inputs.commit }}-${{ matrix.distro }}-${{ matrix.arch }}" >> $GITHUB_ENV
@@ -79,7 +79,7 @@ jobs:
               echo "do nothing........"
             fi
             
-            if [ $release_version = "last" ]; then
+            if [ $release_version = "latest" ]; then
               git clone https://github.com/tdlib/td.git
             else
               git clone --branch $release_version https://github.com/tdlib/td.git
