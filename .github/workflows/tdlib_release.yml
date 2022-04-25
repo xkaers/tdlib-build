@@ -100,17 +100,17 @@ jobs:
         run: |
           echo "release_name=tdlib-${{ github.event.inputs.commit }}-${{ matrix.os }}-x86_64" >> $GITHUB_ENV
           echo "release_version=${{ github.event.inputs.commit }}" >> $GITHUB_ENV
-      - name: System Update
-        run: |
-          sudo apt-get update
-          sudo apt-get upgrade
-      - name: Install packages
+      - name: Set Clang Version ENV
         if: ${{ matrix.os == 'ubuntu-18.04'}}
         run: |
-          sudo apt-get install make git zlib1g-dev libssl-dev gperf php-cli cmake clang-6.0 libc++-dev libc++abi-dev
+          echo "clang_version=6.0" >> $GITHUB_ENV
         if: ${{ matrix.os == 'ubuntu-20.04'}}
         run: |
-          sudo apt-get install make git zlib1g-dev libssl-dev gperf php-cli cmake clang-10 libc++-dev libc++abi-dev
+          echo "clang_version=10" >> $GITHUB_ENV
+      - name: System Update && Install packages
+          sudo apt-get update
+          sudo apt-get upgrade
+          sudo apt-get install make git zlib1g-dev libssl-dev gperf php-cli cmake clang-${{ env.clang_version }} libc++-dev libc++abi-dev
       - uses: actions/checkout@v3
       - uses: actions/setup-java@v3
         with:
@@ -122,16 +122,10 @@ jobs:
           repository: tdlib/td
           ref: ${{ github.event.inputs.commit }}
       - name: Build For Linux Java
-      - if: ${{ matrix.os == 'ubuntu-18.04'}}
         env:
           CXXFLAGS: "-stdlib=libc++"
-          CC: /usr/bin/clang-6.0
-          CXX: /usr/bin/clang++-6.0
-      - if: ${{ matrix.os == 'ubuntu-20.04'}}
-        env:
-          CXXFLAGS: "-stdlib=libc++"
-          CC: /usr/bin/clang-10
-          CXX: /usr/bin/clang++-10
+          CC: /usr/bin/clang-${{ env.clang_version }}
+          CXX: /usr/bin/clang++-${{ env.clang_version }}
         run: |
           mkdir build
           cd build
@@ -148,16 +142,10 @@ jobs:
           cd ../..
           tar -czvf ${{ env.release_name }}-for-java.tar.gz tdlib/*
       - name: Build For Linux Except Java (through JSON interface)
-      - if: ${{ matrix.os == 'ubuntu-18.04'}}
         env:
           CXXFLAGS: "-stdlib=libc++"
-          CC: /usr/bin/clang-6.0
-          CXX: /usr/bin/clang++-6.0
-      - if: ${{ matrix.os == 'ubuntu-20.04'}}
-        env:
-          CXXFLAGS: "-stdlib=libc++"
-          CC: /usr/bin/clang-10
-          CXX: /usr/bin/clang++-10
+          CC: /usr/bin/clang-${{ env.clang_version }}
+          CXX: /usr/bin/clang++-${{ env.clang_version }}
         run: |
           rm -rf build
           rm -rf tdlib
