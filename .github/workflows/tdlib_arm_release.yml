@@ -9,7 +9,7 @@ on:
 
 jobs:
   linux:
-    runs-on: self-hosted
+    runs-on: ubuntu-latest
     name: Build on ${{ matrix.distro }} ${{ matrix.arch }}
     strategy:
       matrix:
