@@ -19,7 +19,7 @@ jobs:
           - arch: aarch64
             distro: ubuntu18.04
           - arch: s390x
-            distro: ubuntu18.04
+            distro: ubuntu20.04
           - arch: ppc64le
             distro: ubuntu18.04
     steps:
@@ -40,7 +40,7 @@ jobs:
             mkdir -p -v "${PWD}/tdlib"
           dockerRunArgs: |
             --volume "${PWD}/tdlib:/root/tdlib"
-          env: |
+          env: | 
             arch: ${{ matrix.arch }}
             release_name: ${{ env.release_name }}
             release_version: ${{ env.release_version }}
