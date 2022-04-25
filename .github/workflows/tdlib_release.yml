@@ -108,6 +108,7 @@ jobs:
         run: |
           echo "clang_version=10" >> $GITHUB_ENV
       - name: System Update && Install packages
+        run: |
           sudo apt-get update
           sudo apt-get upgrade
           sudo apt-get install make git zlib1g-dev libssl-dev gperf php-cli cmake clang-${{ env.clang_version }} libc++-dev libc++abi-dev
