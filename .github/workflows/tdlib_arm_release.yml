@@ -9,7 +9,8 @@ on:
 
 jobs:
   linux:
-    runs-on: ubuntu-latest
+    runs-on: self-hosted
+    timeout-minutes: 10000
     name: Build on ${{ matrix.distro }} ${{ matrix.arch }}
     strategy:
       matrix:
