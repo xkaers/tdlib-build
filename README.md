@@ -41,7 +41,7 @@ https://www.arloor.com/posts/tdlib-java-telegram-client/
 
 
 
-*workflows目前是手动触发启动的,如果你用的时候发现release不是最新的请提PR给我*
+*workflows目前是手动触发启动的,如果你用的时候发现release不是最新的请提issues给我*
 
 
 
