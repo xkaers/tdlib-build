@@ -90,7 +90,7 @@ jobs:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        os: [ubuntu-18.04, ubuntu-20.04]
+        os: [ubuntu-22.04, ubuntu-20.04]
     steps:
       - if: ${{ github.event.inputs.commit == 'master' || github.event.inputs.commit == '' }}
         run: |
@@ -100,7 +100,7 @@ jobs:
         run: |
           echo "release_name=tdlib-${{ github.event.inputs.commit }}-${{ matrix.os }}-x86_64" >> $GITHUB_ENV
           echo "release_version=${{ github.event.inputs.commit }}" >> $GITHUB_ENV
-      - if: ${{ matrix.os == 'ubuntu-18.04'}}
+      - if: ${{ matrix.os == 'ubuntu-22.04'}}
         run: |
           echo "clang_version=6.0" >> $GITHUB_ENV
       - if: ${{ matrix.os == 'ubuntu-20.04'}}
