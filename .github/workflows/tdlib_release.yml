@@ -102,7 +102,7 @@ jobs:
           echo "release_version=${{ github.event.inputs.commit }}" >> $GITHUB_ENV
       - if: ${{ matrix.os == 'ubuntu-22.04'}}
         run: |
-          echo "clang_version=6.0" >> $GITHUB_ENV
+          echo "clang_version=14" >> $GITHUB_ENV
       - if: ${{ matrix.os == 'ubuntu-20.04'}}
         run: |
           echo "clang_version=10" >> $GITHUB_ENV
@@ -110,7 +110,7 @@ jobs:
         run: |
           sudo apt-get update
           sudo apt-get upgrade
-          sudo apt-get install make git zlib1g-dev libssl-dev gperf php-cli cmake clang-${{ env.clang_version }} libc++-dev libc++abi-dev
+          sudo apt-get install make git zlib1g-dev libssl-dev gperf php-cli cmake clang-${{ env.clang_version }} libc++-${{ env.clang_version }}-dev libc++abi-${{ env.clang_version }}-dev
       - uses: actions/checkout@v3
       - uses: actions/setup-java@v3
         with:
